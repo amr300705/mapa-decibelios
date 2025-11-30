@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Mapa de ruido continuo – Península Ibérica</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #map { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <script>
+    // Mapa centrado en Cáceres
+    var map = L.map("map", {
+  center: [39.4760, -6.3720],  // Cáceres
+  zoom: 13,                    // zoom centrado en la ciudad
+  minZoom: 5,
+  maxZoom: 18
+});
+
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // ------------------------------
+    // 1) FOCOS REALES (ciudades)
+    // Intensidad 0–1
+    // ------------------------------
+    var cities = [
+  // ----- GRANDES (intensidad muy alta) -----
+  [40.4168, -3.7038, 1.00], // Madrid
+  [41.3874, 2.1686, 0.97], // Barcelona
+  [38.7223, -9.1393, 0.96], // Lisboa
+  [39.4699, -0.3763, 0.94], // Valencia
+  [41.1579, -8.6291, 0.92], // Porto
+  [37.3891, -5.9845, 0.92], // Sevilla
+  [36.7213, -4.4214, 0.90], // Málaga
+  [41.557, -4.732, 0.85],   // Valladolid
+
+  // ----- CIUDADES GRANDES / MEDIAS -----
+  [43.2630, -2.9350, 0.85], // Bilbao
+  [37.9847, -1.1288, 0.84], // Murcia
+  [38.3452, -0.4810, 0.82], // Alicante
+  [43.3623, -8.4115, 0.80], // A Coruña
+  [42.2406, -8.7207, 0.80], // Vigo
+  [39.8628, -4.0273, 0.78], // Toledo
+  [37.1773, -3.5986, 0.82], // Granada
+  [37.8882, -4.7794, 0.80], // Córdoba
+  [40.9701, -5.6635, 0.78], // Salamanca
+  [41.6488, -0.8891, 0.83], // Zaragoza
+  [39.5696, 2.6502, 0.82], // Palma
+
+  // ----- CIUDADES PORTUGAL MEDIAS -----
+  [41.5454, -8.4265, 0.78], // Braga
+  [40.2033, -8.4103, 0.75], // Coimbra
+  [39.7444, -8.8070, 0.72], // Leiria
+  [37.0194, -7.9304, 0.70], // Faro
+  [38.524398, -8.888197, 0.72], // Setúbal
+  [38.7072, -8.9750, 0.72], // Almada
+
+  // ----- CAPITALES DE PROVINCIA ESPAÑA -----
+  [43.5322, -5.6611, 0.75], // Gijón
+  [43.3619, -5.8494, 0.75], // Oviedo
+  [42.5987, -5.5671, 0.72], // León
+  [42.8125, -1.6458, 0.75], // Pamplona
+  [43.3183, -1.9812, 0.75], // Donostia
+  [41.1200, 1.2445, 0.75], // Tarragona
+  [39.9864, -4.1330, 0.68], // Talavera
+  [38.8786, -6.3389, 0.72], // Mérida
+  [36.536, -6.292, 0.78], // Cádiz
+  [36.7213, -6.127, 0.78], // Jerez
+  [36.014, -5.603, 0.75], // Algeciras
+  [36.742, -5.165, 0.68], // Ronda
+  [37.601, -0.981, 0.70], // Cartagena
+  [40.630, -3.161, 0.66], // Guadalajara
+  [39.856, -4.024, 0.70], // Toledo
+  [41.766, -2.479, 0.66], // Soria
+  [40.656, -4.700, 0.70], // Ávila
+  [41.500, -5.750, 0.72], // Zamora
+  [42.341, -3.703, 0.75], // Burgos
+  [40.550, -6.602, 0.60], // Ciudad Rodrigo
+  [40.947, -4.117, 0.68], // Segovia
+  [40.417, -5.744, 0.63], // Béjar
+
+  // ----- EXTREMADURA -----
+  [39.4760, -6.3720, 0.78], // Cáceres
+  [38.8794, -6.9707, 0.78], // Badajoz
+  [39.0870, -5.9990, 0.70], // Don Benito
+  [38.9700, -5.8620, 0.68], // Villanueva de la Serena
+  [39.223, -6.617, 0.67], // Mérida periferia
+
+  // ----- ANDALUCÍA AÑADIDOS -----
+  [36.526, -6.289, 0.70], // San Fernando
+  [36.461, -5.725, 0.72], // Arcos de la Frontera
+  [37.258, -6.950, 0.72], // Huelva
+  [37.884, -6.591, 0.70], // Aracena
+  [37.204, -3.609, 0.70], // Santa Fe
+  [37.777, -3.794, 0.68], // Baena
+  [37.774, -5.139, 0.68], // Écija
+  [37.892, -6.566, 0.65], // Valverde del Camino
+
+  // ----- COMUNIDAD VALENCIANA AÑADIDOS -----
+  [39.986, -0.051, 0.75], // Castellón
+  [38.995, -0.491, 0.73], // Gandía
+  [38.536, -0.129, 0.72], // Benidorm
+  [38.628, -0.873, 0.70], // Alcoy
+
+  // ----- GALICIA AÑADIDOS -----
+  [42.8782, -8.5448, 0.75], // Santiago de Compostela
+  [42.429, -8.646, 0.68], // Pontevedra
+  [42.598, -8.775, 0.66], // Vilagarcía
+  [42.562, -7.982, 0.66], // Ourense
+
+  // ----- CASTILLA-LA MANCHA -----
+  [39.860, -4.024, 0.70], // Toledo
+  [39.857, -4.031, 0.70],
+  [40.068, -2.135, 0.70], // Cuenca
+  [38.985, -3.929, 0.72], // Ciudad Real
+  [38.889, -1.862, 0.70], // Albacete
+
+  // ----- ARAGÓN -----
+  [41.634, -0.884, 0.83], // Zaragoza (más puntos)
+  [42.135, -0.408, 0.70], // Huesca
+  [40.352, -1.106, 0.67], // Teruel
+
+  // ----- CATALUÑA -----
+  [41.385, 2.173, 0.97], // Barcelona (refuerzo)
+  [41.496, 2.083, 0.85], // Sabadell
+  [41.562, 2.008, 0.85], // Terrassa
+  [41.118, 1.245, 0.74], // Tarragona
+  [41.979, 2.821, 0.74], // Girona
+  [41.152, 1.106, 0.71], // Reus
+  [41.226, 1.728, 0.70], // Vendrell
+
+  // ----- BALEARES -----
+  [39.5696, 2.6502, 0.82], // Palma
+  [39.714, 2.911, 0.70], // Inca
+  [39.552, 2.633, 0.68], // Calvià
+];
+
+
+    // ------------------------------
+    // 2) RELLENO CONTINUO DE LA PENÍNSULA
+    // Capa base uniforme para que no haya calvas.
+    // ------------------------------
+
+    var baseFill = [];
+
+    for (var lat = 36; lat <= 44; lat += 0.08) {
+      for (var lng = -10; lng <= 4; lng += 0.08) {
+        baseFill.push([
+          lat + (Math.random() - 0.5) * 0.02,
+          lng + (Math.random() - 0.5) * 0.02,
+          0.15 + Math.random() * 0.15 // ruido ambiental bajo/medio
+        ]);
+      }
+    }
+
+    // ------------------------------
+    // 3) EXPANSIÓN URBANA ALREDEDOR DE CIUDADES
+    // ------------------------------
+
+    var expandedCities = [];
+
+    cities.forEach(function (c) {
+      for (var i = 0; i < 100; i++) {
+        expandedCities.push([
+          c[0] + (Math.random() - 0.5) * 0.20,
+          c[1] + (Math.random() - 0.5) * 0.20,
+          c[2] * (0.6 + Math.random() * 0.4)
+        ]);
+      }
+    });
+
+    var allPoints = baseFill.concat(expandedCities).concat(cities);
+
+    // ------------------------------
+    // 4) HEATMAP con escala Inferno invertida (amarillo = máximo)
+    // ------------------------------
+
+    var heat = L.heatLayer(allPoints, {
+      radius: 35,
+      blur: 35,
+      maxZoom: 12,
+      gradient: {
+        0.0: "#0d0887",   // mínimo (azul oscuro)
+        0.25: "#46039f",
+        0.50: "#7201a8",
+        0.75: "#bd3786",
+        1.0: "#fcffa4"    // máximo (amarillo)
+      }
+    }).addTo(map);
+
+  </script>
+</body>
+</html>
